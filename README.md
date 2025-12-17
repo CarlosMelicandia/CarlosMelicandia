@@ -1,7 +1,7 @@
 # 💫 About Me:
-<h1 align="center">hey, i'm carlos 👋</h1>
+<h1 align="center">Hey, I'm Carlos 👋</h1>
 <p align="center">
-  software engineer
+  Software Engineer
 </p>
 
 ## 🌐 Socials:
