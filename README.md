@@ -3,13 +3,6 @@
 <p align="center">
   software engineer
 </p>
-<p align="center">
-  <a href="mailto:cmeliwork@gmail.com">Email</a> •
-  <a href="https://linkedin.com/in/carlosmelicandia">LinkedIn</a> •
-  <a href="https://github.com/CarlosMelicandia">GitHub</a> •
-  <a href="https://shellhacks.net" target="_blank">shellhacks.net</a>
-</p>
-
 
 ## 🌐 Socials:
 [![Discord](https://img.shields.io/badge/Discord-%237289DA.svg?logo=discord&logoColor=white)](https://discord.gg/hola4533) [![LinkedIn](https://img.shields.io/badge/LinkedIn-%230077B5.svg?logo=linkedin&logoColor=white)](https://linkedin.com/in/carlosmelicandia) [![email](https://img.shields.io/badge/Email-D14836?logo=gmail&logoColor=white)](mailto:cmeliwork@gmail.com) 
