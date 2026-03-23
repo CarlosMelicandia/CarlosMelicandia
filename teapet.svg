@@ -5,7 +5,7 @@
     <radialGradient id="aura" cx="50%" cy="50%" r="50%">
       <stop offset="0%" stop-color="#44ff88">
         <animate attributeName="stop-opacity"
-          values="0.040;0.000;0.040"
+          values="0.335;0.078;0.335"
           dur="3s" repeatCount="indefinite"/>
       </stop>
       <stop offset="100%" stop-color="#44ff88" stop-opacity="0"/>
@@ -13,18 +13,18 @@
 
     <!-- Body gradient -->
     <radialGradient id="body" cx="36%" cy="28%" r="68%">
-      <stop offset="0%"   stop-color="#c47a4a"/>
-      <stop offset="100%" stop-color="#8b5e3c"/>
+      <stop offset="0%"   stop-color="#cb8954"/>
+      <stop offset="100%" stop-color="#7f5736"/>
     </radialGradient>
 
     <!-- Per-eye glow gradients -->
     <radialGradient id="egl" cx="50%" cy="50%" r="50%">
-      <stop offset="0%"   stop-color="#221006" stop-opacity="0.000"/>
-      <stop offset="100%" stop-color="#221006" stop-opacity="0"/>
+      <stop offset="0%"   stop-color="#137728" stop-opacity="0.412"/>
+      <stop offset="100%" stop-color="#137728" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="egr" cx="50%" cy="50%" r="50%">
-      <stop offset="0%"   stop-color="#221006" stop-opacity="0.000"/>
-      <stop offset="100%" stop-color="#221006" stop-opacity="0"/>
+      <stop offset="0%"   stop-color="#137728" stop-opacity="0.412"/>
+      <stop offset="100%" stop-color="#137728" stop-opacity="0"/>
     </radialGradient>
 
     <filter id="blur3"><feGaussianBlur stdDeviation="3"/></filter>
@@ -32,14 +32,19 @@
   </defs>
 
   <!-- Ground aura -->
-  <ellipse cx="100" cy="200" rx="28.0" ry="12.0"
+  <ellipse cx="100" cy="200" rx="52.7" ry="25.0"
     fill="url(#aura)" filter="url(#blur5)"/>
 
   <!-- Ground shadow -->
   <ellipse cx="100" cy="207" rx="46" ry="8" fill="#000" opacity="0.18"/>
 
   <!-- Steam wisps -->
-
+  <path d="M 100 72 Q 109 58 100 44 Q 91 30 100 16"
+        stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0">
+      <animate attributeName="opacity" values="0;0.55;0" dur="2.4s" begin="0s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" type="translate"
+        values="0,0; 4,-6; 0,-12" dur="2.4s" begin="0s" repeatCount="indefinite"/>
+    </path>
 
   <!-- ── Tea pet body (layered back → front) ── -->
 
@@ -73,8 +78,8 @@
   <circle cx="117" cy="100" r="20" fill="url(#egr)" filter="url(#blur3)"/>
 
   <!-- Pupils -->
-  <circle cx="83"  cy="100" r="7.5" fill="#221006"/>
-  <circle cx="117" cy="100" r="7.5" fill="#221006"/>
+  <circle cx="83"  cy="100" r="7.5" fill="#137728"/>
+  <circle cx="117" cy="100" r="7.5" fill="#137728"/>
 
   <!-- Eye shine -->
   <circle cx="80"  cy="97"  r="2.8" fill="white" opacity="0.85"/>
@@ -82,10 +87,10 @@
 
   <!-- Smile -->
   <path d="M 88 124 Q 100 133 112 124"
-    stroke="#8b5e3c" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    stroke="#7f5736" stroke-width="2.5" fill="none" stroke-linecap="round"/>
 
   <!-- Nostrils -->
-  <circle cx="96"  cy="119" r="2.2" fill="#8b5e3c" opacity="0.55"/>
-  <circle cx="104" cy="119" r="2.2" fill="#8b5e3c" opacity="0.55"/>
+  <circle cx="96"  cy="119" r="2.2" fill="#7f5736" opacity="0.55"/>
+  <circle cx="104" cy="119" r="2.2" fill="#7f5736" opacity="0.55"/>
 
 </svg>
