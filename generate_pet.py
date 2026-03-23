@@ -22,39 +22,18 @@ def hex_color(r1, g1, b1, r2, g2, b2, t):
     )
 
 
-def steam_wisp(cx, base_y, dur, delay):
-    return f"""  <path d="M {cx} {base_y} Q {cx+8} {base_y-14} {cx} {base_y-28} Q {cx-8} {base_y-42} {cx} {base_y-56}"
-    stroke="rgba(255,255,255,0.60)" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0">
-    <animate attributeName="opacity" values="0;0.55;0" dur="{dur}" begin="{delay}" repeatCount="indefinite"/>
-    <animateTransform attributeName="transform" type="translate"
-      values="0,0; 5,-7; 0,-14" dur="{dur}" begin="{delay}" repeatCount="indefinite"/>
-  </path>"""
-
-
 def generate_svg(commits: int, max_commits: int = 30) -> str:
     t = min(commits / max_commits, 1.0)
 
     # Body color: brown #C88400 → green #4E9018
     body_color = hex_color(0xC8, 0x84, 0x00, 0x4E, 0x90, 0x18, t)
-
-    # Steam wisps above frog's back (highest body points are y≈13-25)
-    steam_count = 0 if t < 0.40 else (1 if t < 0.70 else 3)
-    steam_svg   = ""
-    if steam_count >= 1:
-        steam_svg += steam_wisp(125, 16, "2.4s", "0s")
-    if steam_count >= 3:
-        steam_svg += steam_wisp(100, 22, "2.0s", "0.7s")
-        steam_svg += steam_wisp(152, 20, "2.8s", "1.3s")
-
+    
     return f"""<svg width="317" height="199" viewBox="0 0 317 199" fill="none"
-     xmlns="http://www.w3.org/2000/svg">
-
-  <!-- Steam wisps (above frog back) -->
-{steam_svg}
+    xmlns="http://www.w3.org/2000/svg">
 
   <!-- ════════════════════════════════════════
-       HAND-DRAWN FROG ART  (unmodified paths)
-       ════════════════════════════════════════ -->
+      HAND-DRAWN FROG ART  (unmodified paths)
+      ════════════════════════════════════════ -->
 
   <!-- Body -->
   <path d="M110.493 31.2132L162.993 22.7132L201.993 26.2132L233.993 33.7132L241.493 28.7132L259.993 24.7132L276.493 26.2132L284.493 38.7132L280.493 53.7132L288.493 65.2132L299.493 90.7132L296.493 112.713L269.993 129.213L272.493 146.713L265.993 166.213H237.993L235.993 156.713L222.993 163.213L181.493 169.713C181.493 169.713 198.983 172.542 204.743 173.713C210.503 174.885 215.993 178.213 215.993 178.213L217.493 183.213L205.993 188.213V194.713H174.493L142.993 186.213L124.493 172.713L110.993 176.713L113.993 179.213L112.493 183.713L62.9931 183.213L40.9931 179.213L18.9931 172.713L1.49313 160.713L2.49313 148.713L6.99313 136.713L18.9931 121.213L21.4931 112.713L26.4931 102.713L32.4931 94.2132L38.9931 83.7132L53.4931 67.7132L71.9931 51.7132L110.493 31.2132Z" fill="{body_color}" stroke="black" stroke-width="2"/>
