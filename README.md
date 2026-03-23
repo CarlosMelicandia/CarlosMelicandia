@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img src="./teapet.svg" alt="tea pet — glows with commit activity" width="160"/>
+  <img src="./teapet.svg" alt="tea pet — glows with commit activity" width="280"/>
   <br/>
   <sub><i>my tea pet glows brighter when I've been coding ✨</i></sub>
 </p>

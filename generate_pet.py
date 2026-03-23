@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Generate a glowing tea-pet frog SVG based on recent commit count.
+"""Generate tea-pet frog SVG with parametric commit glow.
+
+Preserves the hand-drawn art exactly; adds ground aura, eye glow,
+and steam wisps on top based on recent commit count.
 
 Usage: python generate_pet.py <commit_count> > teapet.svg
 """
@@ -11,137 +14,127 @@ def lerp(a, b, t):
     return a + (b - a) * t
 
 
-def hex_color(r1, g1, b1, r2, g2, b2, t):
-    r = int(lerp(r1, r2, t))
-    g = int(lerp(g1, g2, t))
-    b = int(lerp(b1, b2, t))
-    return f"#{r:02x}{g:02x}{b:02x}"
-
-
 def steam_wisp(cx, base_y, dur, delay):
-    return f"""  <path d="M {cx} {base_y} Q {cx+9} {base_y-14} {cx} {base_y-28} Q {cx-9} {base_y-42} {cx} {base_y-56}"
-        stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0">
-      <animate attributeName="opacity" values="0;0.55;0" dur="{dur}" begin="{delay}" repeatCount="indefinite"/>
-      <animateTransform attributeName="transform" type="translate"
-        values="0,0; 4,-6; 0,-12" dur="{dur}" begin="{delay}" repeatCount="indefinite"/>
-    </path>"""
+    return f"""  <path d="M {cx} {base_y} Q {cx+8} {base_y-14} {cx} {base_y-28} Q {cx-8} {base_y-42} {cx} {base_y-56}"
+    stroke="rgba(255,255,255,0.60)" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0">
+    <animate attributeName="opacity" values="0;0.55;0" dur="{dur}" begin="{delay}" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="translate"
+      values="0,0; 5,-7; 0,-14" dur="{dur}" begin="{delay}" repeatCount="indefinite"/>
+  </path>"""
 
 
 def generate_svg(commits: int, max_commits: int = 30) -> str:
     t = min(commits / max_commits, 1.0)
 
-    # ── aura ──────────────────────────────────────────────────────────────────
-    aura_rx   = lerp(28,  85, t)
-    aura_ry   = lerp(12,  42, t)
-    glow_min  = lerp(0.00, 0.18, t)
-    glow_max  = lerp(0.04, 0.72, t)
+    # Ground aura
+    aura_rx  = lerp(28, 130, t)
+    aura_ry  = lerp(8,  38,  t)
+    glow_min = lerp(0.00, 0.14, t)
+    glow_max = lerp(0.03, 0.68, t)
 
-    # ── eye colour: dark brown → bright green ─────────────────────────────────
-    eye_hex   = hex_color(0x22, 0x10, 0x06, 0x00, 0xff, 0x55, t)
-    eye_glow  = lerp(0.0, 0.95, t)
+    # Eye glow (eye center is at 208.993, 76.7132, iris radius ~16.5)
+    eye_glow_r = lerp(0, 46, t)
+    eye_lum    = lerp(0.0, 0.80, t)
 
-    # ── body colour brightens slightly ────────────────────────────────────────
-    hi  = hex_color(0xc4, 0x7a, 0x4a, 0xd6, 0x9e, 0x62, t)
-    shd = hex_color(0x8b, 0x5e, 0x3c, 0x70, 0x4e, 0x30, t)
-
-    # ── steam ─────────────────────────────────────────────────────────────────
+    # Steam wisps above frog's back (highest body points are y≈13-25)
     steam_count = 0 if t < 0.40 else (1 if t < 0.70 else 3)
     steam_svg   = ""
     if steam_count >= 1:
-        steam_svg += steam_wisp(100, 72, "2.4s", "0s")
+        steam_svg += steam_wisp(125, 16, "2.4s", "0s")
     if steam_count >= 3:
-        steam_svg += steam_wisp(84,  78, "2.0s", "0.7s")
-        steam_svg += steam_wisp(116, 76, "2.8s", "1.3s")
+        steam_svg += steam_wisp(100, 22, "2.0s", "0.7s")
+        steam_svg += steam_wisp(152, 20, "2.8s", "1.3s")
 
-    return f"""<svg width="200" height="235" viewBox="0 0 200 235"
+    return f"""<svg width="317" height="199" viewBox="0 0 317 199" fill="none"
      xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <!-- Breathing aura glow -->
+
+    <!-- Breathing ground aura (parametric) -->
     <radialGradient id="aura" cx="50%" cy="50%" r="50%">
       <stop offset="0%" stop-color="#44ff88">
         <animate attributeName="stop-opacity"
           values="{glow_max:.3f};{glow_min:.3f};{glow_max:.3f}"
-          dur="3s" repeatCount="indefinite"/>
+          dur="3.2s" repeatCount="indefinite"/>
       </stop>
       <stop offset="100%" stop-color="#44ff88" stop-opacity="0"/>
     </radialGradient>
 
-    <!-- Body gradient -->
-    <radialGradient id="body" cx="36%" cy="28%" r="68%">
-      <stop offset="0%"   stop-color="{hi}"/>
-      <stop offset="100%" stop-color="{shd}"/>
-    </radialGradient>
-
-    <!-- Per-eye glow gradients -->
+    <!-- Eye glow halo (parametric) -->
     <radialGradient id="egl" cx="50%" cy="50%" r="50%">
-      <stop offset="0%"   stop-color="{eye_hex}" stop-opacity="{eye_glow:.3f}"/>
-      <stop offset="100%" stop-color="{eye_hex}" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="egr" cx="50%" cy="50%" r="50%">
-      <stop offset="0%"   stop-color="{eye_hex}" stop-opacity="{eye_glow:.3f}"/>
-      <stop offset="100%" stop-color="{eye_hex}" stop-opacity="0"/>
+      <stop offset="0%"   stop-color="#ffdd44" stop-opacity="{eye_lum:.3f}"/>
+      <stop offset="100%" stop-color="#ffdd44" stop-opacity="0"/>
     </radialGradient>
 
-    <filter id="blur3"><feGaussianBlur stdDeviation="3"/></filter>
-    <filter id="blur5"><feGaussianBlur stdDeviation="5"/></filter>
+    <filter id="blur6"><feGaussianBlur stdDeviation="6"/></filter>
+    <filter id="blur4"><feGaussianBlur stdDeviation="4"/></filter>
+
   </defs>
 
-  <!-- Ground aura -->
-  <ellipse cx="100" cy="200" rx="{aura_rx:.1f}" ry="{aura_ry:.1f}"
-    fill="url(#aura)" filter="url(#blur5)"/>
-
   <!-- Ground shadow -->
-  <ellipse cx="100" cy="207" rx="46" ry="8" fill="#000" opacity="0.18"/>
+  <ellipse cx="158" cy="197" rx="135" ry="9" fill="#000" opacity="0.13"/>
 
-  <!-- Steam wisps -->
+  <!-- Ground aura glow -->
+  <ellipse cx="158" cy="197" rx="{aura_rx:.1f}" ry="{aura_ry:.1f}"
+    fill="url(#aura)" filter="url(#blur6)"/>
+
+  <!-- Steam wisps (above frog back) -->
 {steam_svg}
 
-  <!-- ── Tea pet body (layered back → front) ── -->
+  <!-- ════════════════════════════════════════
+       HAND-DRAWN FROG ART  (unmodified paths)
+       ════════════════════════════════════════ -->
 
-  <!-- Back legs -->
-  <ellipse cx="61"  cy="191" rx="30" ry="14" fill="url(#body)"
-    transform="rotate(-18 61 191)"/>
-  <ellipse cx="139" cy="191" rx="30" ry="14" fill="url(#body)"
-    transform="rotate(18 139 191)"/>
+  <!-- Body -->
+  <path d="M110.493 31.2132L162.993 22.7132L201.993 26.2132L233.993 33.7132L241.493 28.7132L259.993 24.7132L276.493 26.2132L284.493 38.7132L280.493 53.7132L288.493 65.2132L299.493 90.7132L296.493 112.713L269.993 129.213L272.493 146.713L265.993 166.213H237.993L235.993 156.713L222.993 163.213L181.493 169.713C181.493 169.713 198.983 172.542 204.743 173.713C210.503 174.885 215.993 178.213 215.993 178.213L217.493 183.213L205.993 188.213V194.713H174.493L142.993 186.213L124.493 172.713L110.993 176.713L113.993 179.213L112.493 183.713L62.9931 183.213L40.9931 179.213L18.9931 172.713L1.49313 160.713L2.49313 148.713L6.99313 136.713L18.9931 121.213L21.4931 112.713L26.4931 102.713L32.4931 94.2132L38.9931 83.7132L53.4931 67.7132L71.9931 51.7132L110.493 31.2132Z" fill="#C88400" stroke="black" stroke-width="2"/>
 
-  <!-- Main body -->
-  <ellipse cx="100" cy="165" rx="51" ry="39" fill="url(#body)"/>
+  <!-- Dark eye markings -->
+  <path d="M259.493 85.7132C264.493 80.7132 227.493 74.2132 227.493 74.2132L225.993 85.7132C225.993 85.7132 254.493 90.7132 259.493 85.7132Z" fill="#0A0909"/>
+  <path d="M174.993 75.7132C180.961 74.5427 190.493 74.2132 190.493 74.2132C190.493 74.2132 189.863 78.7164 190.993 81.2132C191.963 83.3554 194.993 85.7132 194.993 85.7132C194.993 85.7132 180.827 87.4662 174.993 89.7132C168.798 92.0995 159.993 97.7132 159.993 97.7132C159.993 97.7132 148.993 106.713 143.493 112.213C133.363 122.344 126.993 116.213 126.993 116.213C126.993 116.213 128.837 104.878 137.993 95.2132C146.993 85.7132 159.993 80.2132 159.993 80.2132C159.993 80.2132 168.992 76.8904 174.993 75.7132Z" fill="#0A0909"/>
 
-  <!-- Front legs -->
-  <ellipse cx="67"  cy="178" rx="19" ry="10" fill="url(#body)"
-    transform="rotate(-22 67 178)"/>
-  <ellipse cx="133" cy="178" rx="19" ry="10" fill="url(#body)"
-    transform="rotate(22 133 178)"/>
+  <!-- Detail lines -->
+  <path d="M0.993134 158.713C0.993134 158.713 3.88389 134.024 14.9931 125.213C29.4931 113.713 40.9931 120.213 40.9931 120.213M17.4931 121.213C17.4931 121.213 21.5967 111.22 24.9931 105.213C28.5916 98.8489 35.4931 89.7132 35.4931 89.7132M277.493 29.2132C277.493 29.2132 273.754 36.3375 273.993 41.2132C274.267 46.798 279.993 54.2132 279.993 54.2132M227.493 74.2132C227.493 74.2132 264.493 80.7132 259.493 85.7132C254.493 90.7132 225.993 85.7132 225.993 85.7132L227.493 74.2132ZM190.493 74.2132C190.493 74.2132 180.961 74.5427 174.993 75.7132C168.992 76.8904 159.993 80.2132 159.993 80.2132C159.993 80.2132 146.993 85.7132 137.993 95.2132C128.837 104.878 126.993 116.213 126.993 116.213C126.993 116.213 133.363 122.344 143.493 112.213C148.993 106.713 159.993 97.7132 159.993 97.7132C159.993 97.7132 168.798 92.0995 174.993 89.7132C180.827 87.4662 194.993 85.7132 194.993 85.7132C194.993 85.7132 191.963 83.3554 190.993 81.2132C189.863 78.7164 190.493 74.2132 190.493 74.2132Z" stroke="black" stroke-width="2"/>
+  <path d="M233.129 33.6944C233.129 33.6944 184.493 15.7132 124.993 28.2132C65.4931 40.7132 35.1292 89.6944 35.1292 89.6944" stroke="black" stroke-width="2"/>
+  <path d="M233.401 32.3002C280.401 12.2132 291.493 35.2132 280.401 53.3002" stroke="black" stroke-width="2"/>
+  <path d="M280.439 54.4392C280.439 54.4392 307.319 88.4828 297.993 108.713C288.3 129.742 242.439 129.439 242.439 129.439" stroke="black" stroke-width="2"/>
+  <path d="M174.989 108.713C174.989 108.713 211.73 115.405 235.493 115.213C259.298 115.021 295.989 107.713 295.989 107.713" stroke="black" stroke-width="2"/>
+  <path d="M269.493 129.213C269.493 129.213 272.575 138.24 272.493 144.213C272.417 149.804 269.493 158.213 269.493 158.213" stroke="black" stroke-width="2"/>
+  <path d="M139.409 124.936C139.409 124.936 140.45 125.303 141.993 127.713C143.362 129.851 143.493 130.213 143.493 130.213" stroke="black" stroke-width="2"/>
 
-  <!-- Neck -->
-  <ellipse cx="100" cy="137" rx="26" ry="13" fill="url(#body)"/>
+  <!-- White belly -->
+  <path d="M252.993 137.713C241.493 158.213 205.493 174.687 177.493 168.687C167.097 166.459 167.133 155.384 158.493 149.187C147.325 141.176 123.493 135.213 123.493 135.213C123.493 135.213 144.737 130.967 158.493 129.213C172.487 127.429 194.493 126.213 194.493 126.213C194.493 126.213 256.92 130.713 252.993 137.713Z" fill="white" stroke="black" stroke-width="2"/>
+  <path d="M143.02 130.714C143.02 130.714 180.203 124.859 203.993 126.713C223.856 128.261 254.02 136.714 254.02 136.714" stroke="black" stroke-width="2"/>
+  <path d="M261.191 131.673C261.191 131.673 242.568 153.579 226.493 161.213C208.205 169.899 175.191 168.673 175.191 168.673" stroke="black" stroke-width="2"/>
+  <path d="M121.493 135.713C121.493 135.713 143.442 139.745 154.993 148.213C164.321 155.051 175.27 169.797 175.27 169.797" stroke="black" stroke-width="2"/>
+  <path d="M175.228 169.772C175.228 169.772 219.741 174.737 217.993 181.213C216.493 186.772 207.228 186.772 207.228 186.772" stroke="black" stroke-width="2"/>
+  <path d="M175.176 183.748C175.176 183.748 203.993 183.748 205.493 188.213C207.173 193.213 203.176 194.748 203.176 194.748" stroke="black" stroke-width="2"/>
+  <path d="M139.078 183.72C139.078 183.72 160.879 191.742 175.493 193.713C186.176 195.155 203.078 194.72 203.078 194.72" stroke="black" stroke-width="2"/>
 
-  <!-- Head -->
-  <circle cx="100" cy="116" r="35" fill="url(#body)"/>
+  <!-- Back leg details -->
+  <path d="M54.9931 109.713C54.9931 109.713 84.1276 119.058 87.4931 134.713C89.9736 146.251 78.9931 163.713 78.9931 163.713M87.4931 163.713C87.4931 163.713 141.493 167.213 116.493 175.213C101.449 180.027 82.9931 176.713 82.9931 176.713M84.4931 176.713C84.4931 176.713 107.993 175.713 112.993 177.713C114.806 178.438 112.993 182.713 112.993 182.713C112.993 182.713 112.993 185.713 63.4931 182.713C22.0571 180.202 0.993134 160.213 0.993134 160.213M126.493 109.713C126.493 109.713 84.4931 106.213 90.4931 130.213C97.2628 157.292 138.993 182.713 138.993 182.713" stroke="black" stroke-width="2"/>
+  <path d="M87.4931 163.713C87.4931 163.713 67.7151 167.495 54.9931 166.713C42.2249 165.929 22.9931 159.713 22.9931 159.713" stroke="black" stroke-width="2"/>
 
-  <!-- Eye bumps -->
-  <circle cx="83"  cy="100" r="14" fill="url(#body)"/>
-  <circle cx="117" cy="100" r="14" fill="url(#body)"/>
+  <!-- Toes -->
+  <circle cx="238.993" cy="165.213" r="5" fill="#C88400" stroke="black" stroke-width="2"/>
+  <circle cx="250.993" cy="165.213" r="5" fill="#C88400" stroke="black" stroke-width="2"/>
+  <circle cx="264.993" cy="165.213" r="5" fill="#C88400" stroke="black" stroke-width="2"/>
 
-  <!-- Eye glow halos -->
-  <circle cx="83"  cy="100" r="20" fill="url(#egl)" filter="url(#blur3)"/>
-  <circle cx="117" cy="100" r="20" fill="url(#egr)" filter="url(#blur3)"/>
+  <!-- Eye glow halo (behind iris, parametric) -->
+  <circle cx="208.993" cy="76.7132" r="{eye_glow_r:.1f}"
+    fill="url(#egl)" filter="url(#blur4)"/>
 
-  <!-- Pupils -->
-  <circle cx="83"  cy="100" r="7.5" fill="{eye_hex}"/>
-  <circle cx="117" cy="100" r="7.5" fill="{eye_hex}"/>
+  <!-- Main eye iris -->
+  <path d="M208.993 60.2132C218.409 60.2132 225.993 67.6269 225.993 76.7132C225.993 85.7996 218.409 93.2132 208.993 93.2132C199.578 93.2132 191.993 85.7996 191.993 76.7132C191.993 67.6269 199.578 60.2132 208.993 60.2132Z" fill="#FFCC00" stroke="black" stroke-width="2"/>
 
-  <!-- Eye shine -->
-  <circle cx="80"  cy="97"  r="2.8" fill="white" opacity="0.85"/>
-  <circle cx="114" cy="97"  r="2.8" fill="white" opacity="0.85"/>
+  <!-- Eye pupil -->
+  <path d="M209.493 70.2132C213.023 70.2132 215.993 73.2855 215.993 77.2132C215.993 81.141 213.023 84.2132 209.493 84.2132C205.963 84.2132 202.993 81.141 202.993 77.2132C202.993 73.2855 205.963 70.2132 209.493 70.2132Z" fill="black" stroke="black" stroke-width="2"/>
 
-  <!-- Smile -->
-  <path d="M 88 124 Q 100 133 112 124"
-    stroke="{shd}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Second eye (top of head) -->
+  <path d="M278.993 29.2132C279.35 29.2132 279.771 29.3753 280.242 29.8333C280.718 30.296 281.192 31.0145 281.611 31.9798C282.45 33.9078 282.993 36.6414 282.993 39.7132C282.993 42.785 282.45 45.5187 281.611 47.4466C281.192 48.4119 280.718 49.1305 280.242 49.5931C279.771 50.0512 279.35 50.2132 278.993 50.2132C278.636 50.2132 278.215 50.0512 277.744 49.5931C277.269 49.1305 276.795 48.4119 276.375 47.4466C275.537 45.5187 274.993 42.785 274.993 39.7132C274.993 36.6414 275.537 33.9078 276.375 31.9798C276.795 31.0145 277.269 30.296 277.744 29.8333C278.215 29.3753 278.636 29.2132 278.993 29.2132Z" fill="#FFCC00" stroke="black" stroke-width="2"/>
+  <path d="M282.203 37.7445C282.224 37.8276 282.246 37.9371 282.265 38.0775C282.347 38.6949 282.328 39.4743 282.328 40.2132C282.328 40.9432 282.348 41.8633 282.263 42.6185C282.235 42.8597 282.199 43.0451 282.163 43.18C281.894 43.131 281.581 43.0176 281.311 42.7777C280.944 42.453 280.493 41.7585 280.493 40.2132C280.493 39.0693 280.896 38.4875 281.281 38.1722C281.584 37.9238 281.931 37.7973 282.203 37.7445Z" fill="black" stroke="black" stroke-width="2"/>
 
   <!-- Nostrils -->
-  <circle cx="96"  cy="119" r="2.2" fill="{shd}" opacity="0.55"/>
-  <circle cx="104" cy="119" r="2.2" fill="{shd}" opacity="0.55"/>
+  <path d="M269.493 89.2132C271.024 89.2132 271.993 90.2477 271.993 91.2132C271.993 92.1787 271.024 93.2132 269.493 93.2132C267.962 93.2132 266.993 92.1787 266.993 91.2132C266.993 90.2477 267.962 89.2132 269.493 89.2132Z" fill="black" stroke="black" stroke-width="2"/>
+  <path d="M294.011 83.2132C294.285 83.2132 294.395 83.2695 294.436 83.2962C294.48 83.3242 294.545 83.3839 294.627 83.5521C294.715 83.7332 294.792 83.9763 294.887 84.3285C294.973 84.6528 295.079 85.0859 295.212 85.5121L295.291 85.764L295.484 85.9437C295.703 86.1481 295.697 86.2596 295.697 86.2689C295.697 86.3014 295.68 86.4056 295.533 86.5687C295.215 86.9218 294.576 87.2132 294.011 87.2132C292.891 87.2131 291.993 86.3122 291.993 85.2132C291.993 84.1143 292.891 83.2133 294.011 83.2132Z" fill="black" stroke="black" stroke-width="2"/>
 
 </svg>"""
 
