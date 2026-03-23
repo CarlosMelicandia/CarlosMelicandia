@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Generate tea-pet frog SVG with parametric commit glow.
+"""Generate tea-pet frog SVG with parametric commit color.
 
-Preserves the hand-drawn art exactly; adds ground aura, eye glow,
-and steam wisps on top based on recent commit count.
+Brown (#C88400) at 0 commits → green (#4E9018) at max commits.
+Steam wisps appear at high activity.
 
 Usage: python generate_pet.py <commit_count> > teapet.svg
 """
@@ -12,6 +12,14 @@ import sys
 
 def lerp(a, b, t):
     return a + (b - a) * t
+
+
+def hex_color(r1, g1, b1, r2, g2, b2, t):
+    return "#{:02x}{:02x}{:02x}".format(
+        int(lerp(r1, r2, t)),
+        int(lerp(g1, g2, t)),
+        int(lerp(b1, b2, t)),
+    )
 
 
 def steam_wisp(cx, base_y, dur, delay):
@@ -26,15 +34,8 @@ def steam_wisp(cx, base_y, dur, delay):
 def generate_svg(commits: int, max_commits: int = 30) -> str:
     t = min(commits / max_commits, 1.0)
 
-    # Ground aura
-    aura_rx  = lerp(28, 130, t)
-    aura_ry  = lerp(8,  38,  t)
-    glow_min = lerp(0.00, 0.14, t)
-    glow_max = lerp(0.03, 0.68, t)
-
-    # Eye glow (eye center is at 208.993, 76.7132, iris radius ~16.5)
-    eye_glow_r = lerp(0, 46, t)
-    eye_lum    = lerp(0.0, 0.80, t)
+    # Body color: brown #C88400 → green #4E9018
+    body_color = hex_color(0xC8, 0x84, 0x00, 0x4E, 0x90, 0x18, t)
 
     # Steam wisps above frog's back (highest body points are y≈13-25)
     steam_count = 0 if t < 0.40 else (1 if t < 0.70 else 3)
@@ -47,35 +48,6 @@ def generate_svg(commits: int, max_commits: int = 30) -> str:
 
     return f"""<svg width="317" height="199" viewBox="0 0 317 199" fill="none"
      xmlns="http://www.w3.org/2000/svg">
-  <defs>
-
-    <!-- Breathing ground aura (parametric) -->
-    <radialGradient id="aura" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#44ff88">
-        <animate attributeName="stop-opacity"
-          values="{glow_max:.3f};{glow_min:.3f};{glow_max:.3f}"
-          dur="3.2s" repeatCount="indefinite"/>
-      </stop>
-      <stop offset="100%" stop-color="#44ff88" stop-opacity="0"/>
-    </radialGradient>
-
-    <!-- Eye glow halo (parametric) -->
-    <radialGradient id="egl" cx="50%" cy="50%" r="50%">
-      <stop offset="0%"   stop-color="#ffdd44" stop-opacity="{eye_lum:.3f}"/>
-      <stop offset="100%" stop-color="#ffdd44" stop-opacity="0"/>
-    </radialGradient>
-
-    <filter id="blur6"><feGaussianBlur stdDeviation="6"/></filter>
-    <filter id="blur4"><feGaussianBlur stdDeviation="4"/></filter>
-
-  </defs>
-
-  <!-- Ground shadow -->
-  <ellipse cx="158" cy="197" rx="135" ry="9" fill="#000" opacity="0.13"/>
-
-  <!-- Ground aura glow -->
-  <ellipse cx="158" cy="197" rx="{aura_rx:.1f}" ry="{aura_ry:.1f}"
-    fill="url(#aura)" filter="url(#blur6)"/>
 
   <!-- Steam wisps (above frog back) -->
 {steam_svg}
@@ -85,7 +57,7 @@ def generate_svg(commits: int, max_commits: int = 30) -> str:
        ════════════════════════════════════════ -->
 
   <!-- Body -->
-  <path d="M110.493 31.2132L162.993 22.7132L201.993 26.2132L233.993 33.7132L241.493 28.7132L259.993 24.7132L276.493 26.2132L284.493 38.7132L280.493 53.7132L288.493 65.2132L299.493 90.7132L296.493 112.713L269.993 129.213L272.493 146.713L265.993 166.213H237.993L235.993 156.713L222.993 163.213L181.493 169.713C181.493 169.713 198.983 172.542 204.743 173.713C210.503 174.885 215.993 178.213 215.993 178.213L217.493 183.213L205.993 188.213V194.713H174.493L142.993 186.213L124.493 172.713L110.993 176.713L113.993 179.213L112.493 183.713L62.9931 183.213L40.9931 179.213L18.9931 172.713L1.49313 160.713L2.49313 148.713L6.99313 136.713L18.9931 121.213L21.4931 112.713L26.4931 102.713L32.4931 94.2132L38.9931 83.7132L53.4931 67.7132L71.9931 51.7132L110.493 31.2132Z" fill="#C88400" stroke="black" stroke-width="2"/>
+  <path d="M110.493 31.2132L162.993 22.7132L201.993 26.2132L233.993 33.7132L241.493 28.7132L259.993 24.7132L276.493 26.2132L284.493 38.7132L280.493 53.7132L288.493 65.2132L299.493 90.7132L296.493 112.713L269.993 129.213L272.493 146.713L265.993 166.213H237.993L235.993 156.713L222.993 163.213L181.493 169.713C181.493 169.713 198.983 172.542 204.743 173.713C210.503 174.885 215.993 178.213 215.993 178.213L217.493 183.213L205.993 188.213V194.713H174.493L142.993 186.213L124.493 172.713L110.993 176.713L113.993 179.213L112.493 183.713L62.9931 183.213L40.9931 179.213L18.9931 172.713L1.49313 160.713L2.49313 148.713L6.99313 136.713L18.9931 121.213L21.4931 112.713L26.4931 102.713L32.4931 94.2132L38.9931 83.7132L53.4931 67.7132L71.9931 51.7132L110.493 31.2132Z" fill="{body_color}" stroke="black" stroke-width="2"/>
 
   <!-- Dark eye markings -->
   <path d="M259.493 85.7132C264.493 80.7132 227.493 74.2132 227.493 74.2132L225.993 85.7132C225.993 85.7132 254.493 90.7132 259.493 85.7132Z" fill="#0A0909"/>
@@ -114,13 +86,9 @@ def generate_svg(commits: int, max_commits: int = 30) -> str:
   <path d="M87.4931 163.713C87.4931 163.713 67.7151 167.495 54.9931 166.713C42.2249 165.929 22.9931 159.713 22.9931 159.713" stroke="black" stroke-width="2"/>
 
   <!-- Toes -->
-  <circle cx="238.993" cy="165.213" r="5" fill="#C88400" stroke="black" stroke-width="2"/>
-  <circle cx="250.993" cy="165.213" r="5" fill="#C88400" stroke="black" stroke-width="2"/>
-  <circle cx="264.993" cy="165.213" r="5" fill="#C88400" stroke="black" stroke-width="2"/>
-
-  <!-- Eye glow halo (behind iris, parametric) -->
-  <circle cx="208.993" cy="76.7132" r="{eye_glow_r:.1f}"
-    fill="url(#egl)" filter="url(#blur4)"/>
+  <circle cx="238.993" cy="165.213" r="5" fill="{body_color}" stroke="black" stroke-width="2"/>
+  <circle cx="250.993" cy="165.213" r="5" fill="{body_color}" stroke="black" stroke-width="2"/>
+  <circle cx="264.993" cy="165.213" r="5" fill="{body_color}" stroke="black" stroke-width="2"/>
 
   <!-- Main eye iris -->
   <path d="M208.993 60.2132C218.409 60.2132 225.993 67.6269 225.993 76.7132C225.993 85.7996 218.409 93.2132 208.993 93.2132C199.578 93.2132 191.993 85.7996 191.993 76.7132C191.993 67.6269 199.578 60.2132 208.993 60.2132Z" fill="#FFCC00" stroke="black" stroke-width="2"/>
